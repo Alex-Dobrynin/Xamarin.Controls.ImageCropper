@@ -24,6 +24,10 @@ Also, you need to add OnActivityResult handler:
         Controls.ImageCropper.Platform.Droid.OnActivityResult(requestCode, resultCode, intent);
     }
 
+Don't forget to add this row into your AndroidManifest.xml file application tag:
+
+    <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat" />
+
 ### iOS:
 No extra actions required
 
