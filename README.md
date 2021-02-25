@@ -31,31 +31,29 @@ Don't forget to add this row into your AndroidManifest.xml file application tag:
 ### iOS:
 No extra actions required
 
-### Usage:
+### Example of usage:
 
 ```csharp
 await ImageCropper.Current.Crop(new CropSettings()
-                {
-                    AspectRatioX = 1,
-                    AspectRatioY = 1,
-                    CropShape = CropSettings.CropShapeType.Rectangle
-                }, imageFilePath).ContinueWith(t =>
-                {
-                    if (t.IsFaulted)
-                    {
-                        var ex = t.Exception;
-                        //alert user
-                    }
-                    else if (t.IsCanceled)
-                    {
-                        //do nothing
-                    }
-                    else if (t.IsCompletedSuccessfully)
-                    {
-                        var result = t.Result;
-                        //do smth with result
-                    }
-                });
+{
+    AspectRatioX = 1,
+    AspectRatioY = 1,
+    CropShape = CropSettings.CropShapeType.Rectangle
+}, imageFilePath).ContinueWith(t =>
+{
+    if (t.IsFaulted)
+    {
+        var ex = t.Exception;
+        //alert user
+    }
+    else if (t.IsCanceled)
+    {
+        //do nothing
+    }
+    else if (t.IsCompletedSuccessfully)
+    {
+        var result = t.Result;
+        //do smth with result
+    }
+});
 ```
-
-### Example of usage:
