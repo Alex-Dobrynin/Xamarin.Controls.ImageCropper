@@ -15,7 +15,7 @@ namespace Controls.ImageCropper
     {
         private TaskCompletionSource<string> _tcs;
 
-        public Task<string> ShowFromFile(CropSettings settings, string imageFilePath)
+        public Task<string> Crop(CropSettings settings, string imageFilePath)
         {
             _tcs = new TaskCompletionSource<string>();
 
