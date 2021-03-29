@@ -1,4 +1,4 @@
-# Xamarin.Controls.TabView
+# Xamarin.Controls.ImageCropper
 Simple crossplatform xamarin image cropper, you can use it in both Xamarin.Forms and Xamarin native
 
 It uses 
