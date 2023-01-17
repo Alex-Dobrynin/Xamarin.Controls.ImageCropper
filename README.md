@@ -2,6 +2,7 @@
 Simple crossplatform xamarin image cropper, you can use it in both Xamarin.Forms and Xamarin native. Also compatible with .NET 7
 
 For mono use v1.0.1, for .NET use v1.1.0
+https://www.nuget.org/packages/Xamarin.Controls.ImageCropper
 
 For Mono Android it uses 
 
@@ -46,7 +47,7 @@ All you need is to initialize it in your MainActivity.cs's OnCreate method:
 
 Don't forget to add this row into your AndroidManifest.xml file application tag:
 
-    <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat" />
+    <activity android:name="com.canhub.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat" />
 
 ### iOS .NET:
 No extra actions required
