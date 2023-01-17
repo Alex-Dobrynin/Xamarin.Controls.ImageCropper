@@ -1,7 +1,7 @@
 # Xamarin.Controls.ImageCropper
 Simple crossplatform xamarin image cropper, you can use it in both Xamarin.Forms and Xamarin native. Also compatible with .NET 7
 
-For mono use v1.0.1, for .NET use v1.1.0
+For mono use v1.0.1, for .NET use v1.1.1
 https://www.nuget.org/packages/Xamarin.Controls.ImageCropper
 
 For Mono Android it uses 
