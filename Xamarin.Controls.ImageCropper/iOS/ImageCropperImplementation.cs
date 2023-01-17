@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using Bind_TOCropViewController;
+
 using CoreGraphics;
 
 using Foundation;
-
-using TimOliver.TOCropViewController.Xamarin;
 
 using UIKit;
 

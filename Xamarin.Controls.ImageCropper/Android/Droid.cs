@@ -1,31 +1,18 @@
-﻿using Android.App;
-using Android.Content;
+﻿using AndroidX.Activity.Result;
+using AndroidX.AppCompat.App;
 
-using TheArtOfDev.Edmodo.Cropper;
+using Com.Canhub.Cropper;
 
 namespace Controls.ImageCropper.Platform
 {
     public class Droid
     {
-        public static void OnActivityResult(int requestCode, Result resultCode, Intent intent)
+        public static void Init(AppCompatActivity activity)
         {
-            if (requestCode == CropImage.CropImageActivityRequestCode)
-            {
-                CropImage.ActivityResult result = CropImage.GetActivityResult(intent);
-
-                if (resultCode == Result.Ok)
-                {
-                    CropperEvents.Instance.SetSuccess(result.Uri.Path);
-                }
-                else if (resultCode == Result.Canceled)
-                {
-                    CropperEvents.Instance.SetCancel();
-                }
-                else if ((int)resultCode == CropImage.CropImageActivityResultErrorCode)
-                {
-                    CropperEvents.Instance.SetFailure(new System.Exception("Something went wrong while cropping an image"));
-                }
-            }
+            ImageCropperActivityResultLauncher = activity.RegisterForActivityResult(new CropImageContract(), ImageCropper.Current as IActivityResultCallback);
         }
+
+        public static ActivityResultLauncher ImageCropperActivityResultLauncher { get; set; }
     }
+
 }

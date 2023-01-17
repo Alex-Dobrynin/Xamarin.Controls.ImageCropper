@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using Plugin.CurrentActivity;
+using Android.App;
 
-using TheArtOfDev.Edmodo.Cropper;
+using AndroidX.Activity.Result;
+
+using Com.Canhub.Cropper;
 
 namespace Controls.ImageCropper
 {
-    [Android.Runtime.Preserve(AllMembers = true)]
-    public class ImageCropperImplementation : IImageCropper
+    public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
     {
         private TaskCompletionSource<string> _tcs;
 
@@ -18,48 +19,52 @@ namespace Controls.ImageCropper
 
             try
             {
-                CropImage.ActivityBuilder activityBuilder = CropImage.Activity(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)));
+                var cropImageOptions = new CropImageOptions();
+
+                cropImageOptions.OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png;
+                cropImageOptions.ActivityBackgroundColor = Android.Graphics.Color.DarkGray;
 
                 if (settings.CropShape == CropSettings.CropShapeType.Oval)
                 {
-                    activityBuilder.SetCropShape(CropImageView.CropShape.Oval);
+                    cropImageOptions.CropShape = CropImageView.CropShape.Oval;
                 }
                 else
                 {
-                    activityBuilder.SetCropShape(CropImageView.CropShape.Rectangle);
+                    cropImageOptions.CropShape = CropImageView.CropShape.Rectangle;
                 }
 
                 if (settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
                 {
-                    activityBuilder.SetFixAspectRatio(true);
-                    activityBuilder.SetAspectRatio(settings.AspectRatioX, settings.AspectRatioY);
+                    cropImageOptions.FixAspectRatio = true;
+                    cropImageOptions.AspectRatioX = settings.AspectRatioX;
+                    cropImageOptions.AspectRatioY = settings.AspectRatioY;
                 }
                 else
                 {
-                    activityBuilder.SetFixAspectRatio(false);
+                    cropImageOptions.FixAspectRatio = false;
                 }
 
                 if (!string.IsNullOrWhiteSpace(settings.PageTitle))
                 {
-                    activityBuilder.SetActivityTitle(settings.PageTitle);
+                    cropImageOptions.ActivityTitle = new Java.Lang.String(settings.PageTitle);
                 }
 
                 CropperEvents.Instance.Failure = ex =>
                 {
-                    _tcs.SetException(ex);
+                    _tcs?.TrySetException(ex);
                 };
 
                 CropperEvents.Instance.Success = file =>
                 {
-                    _tcs.SetResult(file);
+                    _tcs?.TrySetResult(file);
                 };
 
                 CropperEvents.Instance.Cancel = () =>
                 {
-                    _tcs.SetCanceled();
+                    _tcs?.TrySetCanceled();
                 };
 
-                activityBuilder.Start(CrossCurrentActivity.Current.Activity);
+                Platform.Droid.ImageCropperActivityResultLauncher.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
             }
             catch (Exception ex)
             {
@@ -67,6 +72,26 @@ namespace Controls.ImageCropper
             }
 
             return _tcs.Task;
+        }
+
+        public void OnActivityResult(Java.Lang.Object cropImageResult)
+        {
+            if (cropImageResult is CropImage.ActivityResult result)
+            {
+                if (result.IsSuccessful)
+                {
+                    var path = result.GetUriFilePath(Application.Context, true);
+                    CropperEvents.Instance.SetSuccess(path);
+                }
+                else
+                {
+                    CropperEvents.Instance.SetFailure(result.Error);
+                }
+            }
+            else if (cropImageResult is CropImage.CancelledResult)
+            {
+                CropperEvents.Instance.SetCancel();
+            }
         }
     }
 }

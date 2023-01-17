@@ -18,10 +18,10 @@
 
         static IImageCropper CreateCropper()
         {
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-            return null;
-#else
+#if ANDROID || IOS
             return new ImageCropperImplementation();
+#else
+            return null;
 #endif
         }
     }
