@@ -18,6 +18,7 @@
 		<PackageTags>maui;image;cropper;crop;android;ios;rotate</PackageTags>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Version>1.0.1</Version>
 	</PropertyGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('android'))">

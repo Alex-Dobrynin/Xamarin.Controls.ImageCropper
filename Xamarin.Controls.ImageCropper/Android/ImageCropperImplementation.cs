@@ -7,91 +7,70 @@ using AndroidX.Activity.Result;
 
 using Com.Canhub.Cropper;
 
-namespace Controls.ImageCropper
+namespace Controls.ImageCropper;
+
+public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
 {
-    public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
+    private TaskCompletionSource<string> _tcs;
+
+    public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
-        private TaskCompletionSource<string> _tcs;
+        _tcs = new TaskCompletionSource<string>();
 
-        public Task<string> Crop(CropSettings settings, string imageFilePath)
+        try
         {
-            _tcs = new TaskCompletionSource<string>();
-
-            try
+            var cropImageOptions = new CropImageOptions
             {
-                var cropImageOptions = new CropImageOptions();
+                OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png,
+                ActivityBackgroundColor = Android.Graphics.Color.DarkGray,
+                CropShape = settings.CropShape is CropSettings.CropShapeType.Oval
+                    ? CropImageView.CropShape.Oval
+                    : CropImageView.CropShape.Rectangle
+            };
 
-                cropImageOptions.OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png;
-                cropImageOptions.ActivityBackgroundColor = Android.Graphics.Color.DarkGray;
-
-                if (settings.CropShape == CropSettings.CropShapeType.Oval)
-                {
-                    cropImageOptions.CropShape = CropImageView.CropShape.Oval;
-                }
-                else
-                {
-                    cropImageOptions.CropShape = CropImageView.CropShape.Rectangle;
-                }
-
-                if (settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
-                {
-                    cropImageOptions.FixAspectRatio = true;
-                    cropImageOptions.AspectRatioX = settings.AspectRatioX;
-                    cropImageOptions.AspectRatioY = settings.AspectRatioY;
-                }
-                else
-                {
-                    cropImageOptions.FixAspectRatio = false;
-                }
-
-                if (!string.IsNullOrWhiteSpace(settings.PageTitle))
-                {
-                    cropImageOptions.ActivityTitle = new Java.Lang.String(settings.PageTitle);
-                }
-
-                CropperEvents.Instance.Failure = ex =>
-                {
-                    _tcs?.TrySetException(ex);
-                };
-
-                CropperEvents.Instance.Success = file =>
-                {
-                    _tcs?.TrySetResult(file);
-                };
-
-                CropperEvents.Instance.Cancel = () =>
-                {
-                    _tcs?.TrySetCanceled();
-                };
-
-                Platform.Droid.ImageCropperActivityResultLauncher.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
-            }
-            catch (Exception ex)
+            if (cropImageOptions.FixAspectRatio = settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
             {
-                _tcs.SetException(ex);
+                cropImageOptions.AspectRatioX = settings.AspectRatioX;
+                cropImageOptions.AspectRatioY = settings.AspectRatioY;
             }
 
-            return _tcs.Task;
+            if (!string.IsNullOrWhiteSpace(settings.PageTitle))
+            {
+                cropImageOptions.ActivityTitle = new Java.Lang.String(settings.PageTitle);
+            }
+
+            if (Platform.Droid.ImageCropperActivityResultLauncher is null)
+            {
+                throw new Exception("You must call Controls.ImageCropper.Platform.Droid.Init(activity) in the OnCreate method of your activity");
+            }
+
+            Platform.Droid.ImageCropperActivityResultLauncher.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
+        }
+        catch (Exception ex)
+        {
+            _tcs.SetException(ex);
         }
 
-        public void OnActivityResult(Java.Lang.Object cropImageResult)
+        return _tcs.Task;
+    }
+
+    public void OnActivityResult(Java.Lang.Object cropImageResult)
+    {
+        if (cropImageResult is CropImage.ActivityResult result)
         {
-            if (cropImageResult is CropImage.ActivityResult result)
+            if (result.IsSuccessful)
             {
-                if (result.IsSuccessful)
-                {
-                    var path = result.GetUriFilePath(Application.Context, true);
-                    CropperEvents.Instance.SetSuccess(path);
-                }
-                else
-                {
-                    CropperEvents.Instance.SetFailure(result.Error);
-                }
+                var path = result.GetUriFilePath(Application.Context, true);
+                _tcs?.TrySetResult(path);
             }
-            else if (cropImageResult is CropImage.CancelledResult)
+            else
             {
-                CropperEvents.Instance.SetCancel();
+                _tcs?.TrySetException(result.Error);
             }
+        }
+        else if (cropImageResult is CropImage.CancelledResult)
+        {
+            _tcs?.TrySetCanceled();
         }
     }
 }

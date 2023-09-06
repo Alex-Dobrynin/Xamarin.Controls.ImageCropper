@@ -94,7 +94,7 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
     {
         UIWindow window = null;
 
-        if (OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsIOSVersionAtLeast(15))
+        if (OperatingSystem.IsIOSVersionAtLeast(15))
         {
             foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
             {

@@ -50,21 +50,6 @@ public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActi
                 cropImageOptions.ActivityTitle = new Java.Lang.String(settings.PageTitle);
             }
 
-            CropperEvents.Instance.Failure = ex =>
-            {
-                _tcs?.TrySetException(ex);
-            };
-
-            CropperEvents.Instance.Success = file =>
-            {
-                _tcs?.TrySetResult(file);
-            };
-
-            CropperEvents.Instance.Cancel = () =>
-            {
-                _tcs?.TrySetCanceled();
-            };
-
             _launcher.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
         }
         catch (Exception ex)
@@ -82,16 +67,16 @@ public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActi
             if (result.IsSuccessful)
             {
                 var path = result.GetUriFilePath(MauiApplication.Context, true);
-                CropperEvents.Instance.SetSuccess(path);
+                _tcs?.TrySetResult(path);
             }
             else
             {
-                CropperEvents.Instance.SetFailure(result.Error);
+                _tcs?.TrySetException(result.Error);
             }
         }
         else if (cropImageResult is CropImage.CancelledResult)
         {
-            CropperEvents.Instance.SetCancel();
+            _tcs?.TrySetCanceled();
         }
     }
 }
