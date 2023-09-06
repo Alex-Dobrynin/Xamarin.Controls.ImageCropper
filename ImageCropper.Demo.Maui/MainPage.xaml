@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="ImageCropper.Demo.Maui.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Grid RowDefinitions="Auto,*">
+        <Button x:Name="CropBtn"
+                Clicked="CropBtn_Clicked"
+                HorizontalOptions="Center"
+                Text="Crop" />
+        <Image x:Name="Img"
+               Grid.Row="1" />
+    </Grid>
+
+</ContentPage>

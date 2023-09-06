@@ -1,25 +1,23 @@
-# Xamarin.Controls.ImageCropper
-Simple crossplatform xamarin image cropper, you can use it in both Xamarin.Forms and Xamarin native. Also compatible with .NET 7
+# MAUI / Xamarin ImageCropper
+Simple crossplatform MAUI / Xamarin image cropper, you can use it in Xamarin.Forms, Xamarin native and MAUI. Also compatible with .NET 7
 
-For mono use v1.0.1, for .NET use v1.1.1
-https://www.nuget.org/packages/Xamarin.Controls.ImageCropper
+| Supported platforms | Nuget | Android | iOS | Windows | MacCatalyst |
+|---------------------|---------------|---------|-----|---------|-------------|
+| MAUI                | [![Nuget](https://img.shields.io/nuget/v/Plugin.Maui.ImageCropper)](https://www.nuget.org/packages/Plugin.Maui.ImageCropper)                 | :white_check_mark: | :white_check_mark: | :heavy_multiplication_x: | :heavy_multiplication_x: |
+| Xamarin             | [![Nuget](https://img.shields.io/nuget/v/Xamarin.Controls.ImageCropper)](https://www.nuget.org/packages/Xamarin.Controls.ImageCropper/1.0.1) | :white_check_mark: | :white_check_mark: | :heavy_multiplication_x: | :heavy_multiplication_x: |
+| .NET                | [![Nuget](https://img.shields.io/nuget/v/Xamarin.Controls.ImageCropper)](https://www.nuget.org/packages/Xamarin.Controls.ImageCropper)       | :white_check_mark: | :white_check_mark: | :heavy_multiplication_x: | :heavy_multiplication_x: |
 
-For Mono Android it uses 
+## Powered By:
 
-https://github.com/ArthurHub/Android-Image-Cropper for Android, supports Android 12
+* Mono Android - uses ArturHub's [Android-Image-Cropper](https://github.com/ArthurHub/Android-Image-Cropper)
+* .NET / MAUI Android - uses CanHub's [Android-Image-Cropper](https://github.com/CanHub/Android-Image-Cropper)
+* iOS - uses uses Tim Oliver's [TOCropViewController](https://github.com/TimOliver/TOCropViewController)
 
-For .NET Android it uses 
+### Another platforms:
+Currently Windows and MacCatalyst are not supported, but your PRs are welcome
 
-https://github.com/CanHub/Android-Image-Cropper for Android, supports Android 13
-
-For iOS it uses
-
-https://github.com/TimOliver/TOCropViewController for iOS
-
-
-## Initialize:
-
-### Android Mono:
+## Mono setup:
+### Android:
 It uses Plugin.CurrentActivity under the hood, so don't forget to initialize it in your MainActivity.cs's OnCreate method:
 
     Plugin.CurrentActivity.CrossCurrentActivity.Current.Init(this, bundle);
@@ -30,29 +28,47 @@ Also, you need to add OnActivityResult handler:
     {
         base.OnActivityResult(requestCode, resultCode, intent);
 
-        Controls.ImageCropper.Platform.Droid.OnActivityResult(requestCode, resultCode, intent);
+        Plugin.Maui.ImageCropper.Platform.Droid.OnActivityResult(requestCode, resultCode, intent);
     }
 
 Don't forget to add this row into your AndroidManifest.xml file application tag:
 
     <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat" />
 
-### iOS Mono:
+### iOS:
 No extra actions required
 
-### Android .NET:
+## .NET setup:
+### Android:
 All you need is to initialize it in your MainActivity.cs's OnCreate method:
 
-    Controls.ImageCropper.Platform.Droid.Init(this);
+    Plugin.Maui.ImageCropper.Platform.Droid.Init(this);
 
 Don't forget to add this row into your AndroidManifest.xml file application tag:
 
     <activity android:name="com.canhub.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat" />
 
-### iOS .NET:
+### iOS:
 No extra actions required
 
-### Example of usage:
+## MAUI setup:
+To use it in MAUI you should call ```UseImageCropper()``` method from ```Plugin.Maui.ImageCropper``` namespace.
+
+Also there is another overload which allows you to register ImageCropper instance in services and then use it with DI
+
+```csharp
+UseImageCropper(registerInterface: true)
+```
+
+### Android:
+Don't forget to add this row into your AndroidManifest.xml file application tag:
+
+    <activity android:name="com.canhub.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat" />
+
+### iOS:
+No extra actions required
+
+## Example of usage:
 
 ```csharp
 await ImageCropper.Current.Crop(new CropSettings()

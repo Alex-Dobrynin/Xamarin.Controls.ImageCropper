@@ -35,6 +35,7 @@ namespace ImageCropper.Demo.Droid
         {
             var rs = await Xamarin.Essentials.MediaPicker.PickPhotoAsync();
 
+            //Delay to close Mediapicker's view
             await Task.Delay(1000);
 
             var path = await Controls.ImageCropper.ImageCropper.Current.Crop(new CropSettings()
