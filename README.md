@@ -70,6 +70,8 @@ No extra actions required
 
 ## Example of usage:
 
+##### Note: in MAUI use ```Cropper``` class instead of ```ImageCropper```
+
 ```csharp
 await ImageCropper.Current.Crop(new CropSettings()
 {
