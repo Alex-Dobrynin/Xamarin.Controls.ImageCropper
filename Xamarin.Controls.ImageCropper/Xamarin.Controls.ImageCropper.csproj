@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net7.0;net7.0-ios;net7.0-android</TargetFrameworks>
+		<TargetFrameworks>net8.0;net8.0-ios;net8.0-android</TargetFrameworks>
 		<RootNamespace>Controls.ImageCropper</RootNamespace>
 		
 		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -18,7 +18,7 @@
 		<PackageTags>xamarin image cropper crop android ios rotate</PackageTags>
 		<Copyright>2023 Alex Dobrynin</Copyright>
 		<Description>Simple crossplatform Xamarin image cropper</Description>
-		<Version>1.1.2</Version>
+		<Version>1.2.0</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
