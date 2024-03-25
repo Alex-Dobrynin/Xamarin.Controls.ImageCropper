@@ -5,6 +5,7 @@
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<MauiVersion>8.0.3</MauiVersion>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
@@ -18,18 +19,18 @@
 		<PackageTags>maui;image;cropper;crop;android;ios;rotate</PackageTags>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>1.1.0</Version>
+		<Version>1.1.1</Version>
 	</PropertyGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('android'))">
 	  <PackageReference Include="Com.Vanniktech.AndroidImageCropper.Maui">
-	    <Version>4.4.0</Version>
+	    <Version>4.4.0.2</Version>
 	  </PackageReference>
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('ios'))">
 	  <PackageReference Include="TimOliver.TOCropViewController.Maui">
-	    <Version>2.3.6</Version>
+	    <Version>2.6.1.3</Version>
 	  </PackageReference>
 	</ItemGroup>
 
@@ -44,36 +45,4 @@
 	  </None>
 	</ItemGroup>
 
-
-	<!--hack from https://github.com/dotnet/maui/issues/10989--> 
-  <PropertyGroup>
-    <!-- Properties used to strip bitcode from frameworks when using Visual Studio for Mac -->
-    <_StripBitcodeFromFrameworksMasterAfterTargets Condition="'$(OS)'=='Unix'">_ExpandNativeReferences</_StripBitcodeFromFrameworksMasterAfterTargets>
-    <_StripBitcodeFromFrameworksMasterDependsOnTargets Condition="'$(OS)'=='Unix'">_StripBitcodeFromFrameworksOnMac</_StripBitcodeFromFrameworksMasterDependsOnTargets>
-
-    <!-- Properties used to strip bitcode from frameworks when using Visual Studio for Windows -->
-    <_StripBitcodeFromFrameworksMasterAfterTargets Condition="'$(OS)'!='Unix'">_ComputeFrameworkFilesToPublish</_StripBitcodeFromFrameworksMasterAfterTargets>
-    <_StripBitcodeFromFrameworksMasterDependsOnTargets Condition="'$(OS)'!='Unix'">_StripBitcodeFromFrameworksOnWindows</_StripBitcodeFromFrameworksMasterDependsOnTargets>
-  </PropertyGroup>
-
-  <Target Name="_StripBitcodeFromFrameworksMasterTarget" Condition="'$(_StripBitcodeFromFrameworksMasterDependsOnTargets)'!='' AND @(_FrameworkNativeReference-&gt;Count()) != 0" AfterTargets="$(_StripBitcodeFromFrameworksMasterAfterTargets)" DependsOnTargets="$(_StripBitcodeFromFrameworksMasterDependsOnTargets)" />
-
-  <Target Name="_StripBitcodeFromFrameworksOnMac" Condition="('$(OutputType)'!='Library' OR '$(IsAppExtension)'=='True') AND '$(_SdkIsSimulator)'=='False'">
-
-    <!-- Find the bitcode_strip command -->
-    <Exec Command="xcrun -find bitcode_strip" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_BitcodeStripCommand" />
-    </Exec>
-
-    <!-- Strip the bitcode from frameworks -->
-    <Exec Command="$(_BitcodeStripCommand) %(_FrameworkNativeReference.Identity) -r -o %(_FrameworkNativeReference.Identity)" />
-  </Target>
-
-  <Target Name="_StripBitcodeFromFrameworksOnWindows" Condition="('$(OutputType)'!='Library' OR '$(IsAppExtension)'=='True') AND '$(_SdkIsSimulator)'=='False' AND '$(IsMacEnabled)'=='true'">
-
-    <!-- Strip the bitcode from frameworks -->
-    <Exec SessionId="$(BuildSessionId)" Command="&quot;%24(xcrun -find bitcode_strip)&quot; %(_FrameworkNativeReference.Identity) -r -o %(_FrameworkNativeReference.Identity)" />
-
-    <CopyFileFromBuildServer SessionId="$(BuildSessionId)" File="%(_FrameworkNativeReference.Identity)" TargetFile="%(_FrameworkNativeReference.Identity)" />
-  </Target>
 </Project>
