@@ -18,7 +18,7 @@
 		<PackageTags>xamarin image cropper crop android ios rotate</PackageTags>
 		<Copyright>2023 Alex Dobrynin</Copyright>
 		<Description>Simple crossplatform Xamarin image cropper</Description>
-		<Version>1.2.2</Version>
+		<Version>1.2.3</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
@@ -48,7 +48,7 @@
 
 	<ItemGroup Condition=" $(TargetFramework.Contains('ios')) ">
 		<Compile Include="**\iOS\*.cs" />
-		<PackageReference Include="TimOliver.TOCropViewController.Maui" Version="2.6.1.4" />
+		<PackageReference Include="TOCropView.Maui" Version="2.6.1.7" />
 	</ItemGroup>
 
 	<ItemGroup>
