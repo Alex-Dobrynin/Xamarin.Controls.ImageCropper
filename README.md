@@ -52,7 +52,7 @@ Don't forget to add this row into your AndroidManifest.xml file application tag:
 No extra actions required
 
 ## MAUI setup:
-To use it in MAUI you should call ```UseImageCropper()``` method from ```Plugin.Maui.ImageCropper``` namespace.
+To use it in MAUI you should call ```UseImageCropper()``` method from ```Plugin.Maui.ImageCropper``` namespace on your ```MauiAppBuilder```.
 
 Also there is another overload which allows you to register ImageCropper instance in services and then use it with DI
 
