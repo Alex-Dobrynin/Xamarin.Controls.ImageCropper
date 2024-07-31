@@ -1,5 +1,5 @@
 # MAUI / Xamarin ImageCropper
-Simple crossplatform MAUI / Xamarin image cropper, you can use it in Xamarin.Forms, Xamarin native and MAUI. Also compatible with .NET 7
+Simple crossplatform MAUI / Xamarin image cropper, you can use it in Xamarin.Forms, Xamarin native and MAUI.
 
 | Supported platforms | Nuget | Android | iOS | Windows | MacCatalyst |
 |---------------------|---------------|---------|-----|---------|-------------|
