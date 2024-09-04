@@ -1,28 +1,27 @@
-﻿namespace Controls.ImageCropper
+﻿namespace Controls.ImageCropper;
+
+public class ImageCropper
 {
-    public class ImageCropper
+    static IImageCropper _implementation;
+
+    public static IImageCropper Current
     {
-        static IImageCropper _implementation;
-
-        public static IImageCropper Current
+        get
         {
-            get
-            {
-                return _implementation ??= CreateCropper();
-            }
-            set
-            {
-                _implementation = value;
-            }
+            return _implementation ??= CreateCropper();
         }
-
-        static IImageCropper CreateCropper()
+        set
         {
+            _implementation = value;
+        }
+    }
+
+    static IImageCropper CreateCropper()
+    {
 #if ANDROID || IOS
-            return new ImageCropperImplementation();
+        return new ImageCropperImplementation();
 #else
-            return null;
+        return null;
 #endif
-        }
     }
 }

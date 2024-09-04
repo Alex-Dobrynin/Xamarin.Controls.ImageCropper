@@ -16,9 +16,9 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 {
     private TaskCompletionSource<string> _tcs;
 
-    public Task<string> Crop(CropSettings settings, string imageFilePath)
+    public async Task<string> Crop(CropSettings settings, string imageFilePath)
     {
-        _tcs = new TaskCompletionSource<string>();
+        _tcs = new();
 
         try
         {
@@ -41,39 +41,39 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 
             var navController = new UINavigationController(cropViewController);
 
-            var topVC = GetDefaultWindow().RootViewController;
+            var topVC = GetKeyWindow().RootViewController;
             while (topVC.PresentedViewController != null)
             {
                 topVC = topVC.PresentedViewController;
             }
 
-            topVC.PresentViewController(navController, true, null);
+            await topVC.PresentViewControllerAsync(navController, true);
         }
         catch (Exception ex)
         {
             _tcs.SetException(ex);
         }
 
-        return _tcs.Task;
+        return await _tcs.Task;
     }
 
-    public override void DidCropToImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
+    public override async void DidCropToImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
     {
-        cropViewController.DismissModalViewController(true);
+        await cropViewController.DismissViewControllerAsync(true);
 
         Finalize(image);
     }
 
-    public override void DidCropToCircularImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
+    public override async void DidCropToCircularImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
     {
-        cropViewController.DismissModalViewController(true);
+        await cropViewController.DismissViewControllerAsync(true);
 
         Finalize(image);
     }
 
-    public override void DidFinishCancelled(TOCropViewController cropViewController, bool cancelled)
+    public override async void DidFinishCancelled(TOCropViewController cropViewController, bool cancelled)
     {
-        cropViewController.DismissModalViewController(true);
+        await cropViewController.DismissViewControllerAsync(true);
 
         _tcs.SetCanceled();
     }
@@ -94,27 +94,19 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
         }
     }
 
-    public static UIWindow GetDefaultWindow()
+    public static UIWindow? GetKeyWindow()
     {
-        UIWindow window = null;
-
-        if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
-        {
-            foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
-            {
-                if (scene is UIWindowScene windowScene)
-                {
-                    window = windowScene.KeyWindow;
-
-                    window ??= windowScene?.Windows?.LastOrDefault();
-                }
-            }
-        }
-        else
-        {
-            window = UIApplication.SharedApplication.Windows?.LastOrDefault();
-        }
+        var window = GetActiveScene()?.Windows.FirstOrDefault(w => w.IsKeyWindow);
 
         return window;
+    }
+
+    public static UIWindowScene? GetActiveScene()
+    {
+        var connectedScene = UIApplication.SharedApplication.ConnectedScenes
+            .OfType<UIWindowScene>()
+            .FirstOrDefault(x => x.ActivationState == UISceneActivationState.ForegroundActive);
+
+        return connectedScene;
     }
 }

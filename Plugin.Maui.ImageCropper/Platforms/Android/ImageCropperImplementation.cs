@@ -26,7 +26,7 @@ public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActi
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
-        _tcs = new TaskCompletionSource<string>();
+        _tcs = new();
 
         try
         {

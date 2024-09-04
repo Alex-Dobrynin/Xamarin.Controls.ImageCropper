@@ -14,7 +14,7 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
-        _tcs = new TaskCompletionSource<string>();
+        _tcs = new();
 
         try
         {
@@ -37,11 +37,7 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 
             var navController = new UINavigationController(cropViewController);
 
-            var topVC = GetDefaultWindow().RootViewController;
-            while (topVC.PresentedViewController != null)
-            {
-                topVC = topVC.PresentedViewController;
-            }
+            var topVC = Platform.GetCurrentUIViewController();
 
             topVC.PresentViewController(navController, true, null);
         }
@@ -53,23 +49,23 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
         return _tcs.Task;
     }
 
-    public override void DidCropToImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
+    public override async void DidCropToImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
     {
-        cropViewController.DismissModalViewController(true);
+        await cropViewController.DismissViewControllerAsync(true);
 
         Finalize(image);
     }
 
-    public override void DidCropToCircularImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
+    public override async void DidCropToCircularImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
     {
-        cropViewController.DismissModalViewController(true);
+        await cropViewController.DismissViewControllerAsync(true);
 
         Finalize(image);
     }
 
-    public override void DidFinishCancelled(TOCropViewController cropViewController, bool cancelled)
+    public override async void DidFinishCancelled(TOCropViewController cropViewController, bool cancelled)
     {
-        cropViewController.DismissModalViewController(true);
+        await cropViewController.DismissViewControllerAsync(true);
 
         _tcs.SetCanceled();
     }
@@ -88,29 +84,5 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
         {
             _tcs.SetException(new Exception(err.Description));
         }
-    }
-
-    public static UIWindow GetDefaultWindow()
-    {
-        UIWindow window = null;
-
-        if (OperatingSystem.IsIOSVersionAtLeast(15))
-        {
-            foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
-            {
-                if (scene is UIWindowScene windowScene)
-                {
-                    window = windowScene.KeyWindow;
-
-                    window ??= windowScene?.Windows?.LastOrDefault();
-                }
-            }
-        }
-        else
-        {
-            window = UIApplication.SharedApplication.Windows?.LastOrDefault();
-        }
-
-        return window;
     }
 }
