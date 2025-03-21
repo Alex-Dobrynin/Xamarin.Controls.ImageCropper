@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-using Plugin.Maui.ImageCropper;
+﻿using Plugin.Maui.ImageCropper;
 
 namespace ImageCropper.Demo.Maui
 {
@@ -18,9 +16,6 @@ namespace ImageCropper.Demo.Maui
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-#if DEBUG
-            builder.Logging.AddDebug();
-#endif
             return builder.Build();
         }
     }

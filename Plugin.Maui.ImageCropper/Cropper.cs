@@ -25,10 +25,11 @@ public static class Cropper
     {
 #if IOS
         Current = new ImageCropperImplementation();
-#else
+#elif ANDROID
         Current = new ImageCropperImplementation(builder);
+#else
+        Current = new ImageCropperImplementation();
 #endif
-
         configure?.Invoke();
 
         if (registerInterface)

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net8.0-ios;net8.0-android</TargetFrameworks>
+		<TargetFrameworks>net8.0;net8.0-ios;net8.0-android;net9.0;net9.0-ios;net9.0-android</TargetFrameworks>
 		<RootNamespace>Controls.ImageCropper</RootNamespace>
 		
 		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -16,9 +16,9 @@
 		<RepositoryUrl>https://github.com/Alex-Dobrynin/Xamarin.Controls.ImageCropper.git</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
 		<PackageTags>xamarin image cropper crop android ios rotate</PackageTags>
-		<Copyright>2024 Alex Dobrynin</Copyright>
+		<Copyright>2025 Alex Dobrynin</Copyright>
 		<Description>Simple crossplatform Xamarin image cropper</Description>
-		<Version>1.2.4</Version>
+		<Version>1.3.0</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
@@ -38,6 +38,22 @@
 
 	<ItemGroup>
 		<Compile Include="**\Shared\*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition="!$(TargetFramework.Contains('android'))">
+		<Compile Remove="**\**\*.Android.cs" />
+		<None Include="**\**\*.Android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+
+		<Compile Remove="**\**\Android\**\*.cs" />
+		<None Include="**\**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+	</ItemGroup>
+
+	<ItemGroup Condition="!$(TargetFramework.Contains('ios'))">
+		<Compile Remove="**\**\*.iOS.cs" />
+		<None Include="**\**\*.iOS.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+
+		<Compile Remove="**\**\iOS\**\*.cs" />
+		<None Include="**\**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" $(TargetFramework.Contains('android')) ">

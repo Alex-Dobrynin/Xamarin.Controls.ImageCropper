@@ -6,7 +6,7 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Plugin.Maui.ImageCropper;
 
-public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
+public partial class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
 {
     private ActivityResultLauncher _launcher;
 

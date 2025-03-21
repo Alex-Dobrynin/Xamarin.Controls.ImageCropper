@@ -8,12 +8,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="@string/app_text"
-    />
+        android:text="@string/app_text" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
+				android:gravity="center_horizontal"
+        android:layout_marginTop="100dp"
         android:text="crop" 
         android:id="@+id/btn" />
 </RelativeLayout>

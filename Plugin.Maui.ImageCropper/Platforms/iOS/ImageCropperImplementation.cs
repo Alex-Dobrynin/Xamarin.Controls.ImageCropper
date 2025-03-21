@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Plugin.Maui.ImageCropper;
 
-public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCropper
+public partial class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCropper
 {
     private TaskCompletionSource<string> _tcs;
 
