@@ -18,7 +18,7 @@
 		<PackageTags>maui;image;cropper;crop;android;ios;rotate</PackageTags>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>1.2.0</Version>
+		<Version>1.2.1</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -50,13 +50,13 @@
 
 	<ItemGroup Condition="$(TargetFramework.Contains('android'))">
 	  <PackageReference Include="Com.Vanniktech.AndroidImageCropper.Maui">
-	    <Version>4.5.0</Version>
+	    <Version>4.6.0</Version>
 	  </PackageReference>
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('ios'))">
 		<PackageReference Include="TOCropView.Maui">
-			<Version>2.6.1.8</Version>
+			<Version>2.6.1.9</Version>
 		</PackageReference>
 	</ItemGroup>
 
