@@ -10,7 +10,7 @@ namespace Plugin.Maui.ImageCropper;
 
 public partial class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCropper
 {
-    private TaskCompletionSource<string> _tcs;
+    private TaskCompletionSource<string>? _tcs;
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
@@ -18,7 +18,7 @@ public partial class ImageCropperImplementation : TOCropViewControllerDelegate, 
 
         try
         {
-            var image = UIImage.FromFile(imageFilePath);
+            var image = UIImage.FromFile(imageFilePath)!;
 
             var cropViewController = settings.CropShape is CropSettings.CropShapeType.Oval
                 ? new TOCropViewController(TOCropViewCroppingStyle.Circular, image)
@@ -26,6 +26,8 @@ public partial class ImageCropperImplementation : TOCropViewControllerDelegate, 
 
             cropViewController.Title = settings.PageTitle;
             cropViewController.Delegate = this;
+            cropViewController.CancelButtonTitle = settings.CancelTitle;
+            cropViewController.DoneButtonTitle = settings.DoneTitle;
 
             if (settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
             {
@@ -37,7 +39,8 @@ public partial class ImageCropperImplementation : TOCropViewControllerDelegate, 
 
             var navController = new UINavigationController(cropViewController);
 
-            var topVC = Platform.GetCurrentUIViewController();
+            var topVC = Platform.GetCurrentUIViewController()
+                ?? throw new Exception("Unable to get current UIViewController");
 
             topVC.PresentViewController(navController, true, null);
         }
@@ -67,22 +70,22 @@ public partial class ImageCropperImplementation : TOCropViewControllerDelegate, 
     {
         await cropViewController.DismissViewControllerAsync(true);
 
-        _tcs.SetCanceled();
+        _tcs!.SetCanceled();
     }
 
     private void Finalize(UIImage image)
     {
         string documentsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
         string jpgFilename = Path.Combine(documentsDirectory, $"cropped_{DateTime.Now:yyyyMMddHHmmssfff}.jpg");
-        var imgData = image.AsJPEG();
+        var imgData = image.AsJPEG()!;
 
-        if (imgData.Save(jpgFilename, false, out NSError err))
+        if (imgData.Save(jpgFilename, false, out NSError? err))
         {
-            _tcs.SetResult(jpgFilename);
+            _tcs!.SetResult(jpgFilename);
         }
         else
         {
-            _tcs.SetException(new Exception(err.Description));
+            _tcs!.SetException(new Exception(err?.Description));
         }
     }
 }

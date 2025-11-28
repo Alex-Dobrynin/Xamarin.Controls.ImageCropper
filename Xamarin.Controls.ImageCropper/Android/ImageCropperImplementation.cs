@@ -11,7 +11,7 @@ namespace Controls.ImageCropper;
 
 public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
 {
-    private TaskCompletionSource<string> _tcs;
+    private TaskCompletionSource<string>? _tcs;
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
@@ -21,11 +21,12 @@ public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActi
         {
             var cropImageOptions = new CropImageOptions
             {
-                OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png,
+                CropperLabelText = settings.CropLabelText,
+                OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png!,
                 ActivityBackgroundColor = Android.Graphics.Color.DarkGray,
-                CropShape = settings.CropShape is CropSettings.CropShapeType.Oval
+                CropShape = (settings.CropShape is CropSettings.CropShapeType.Oval
                     ? CropImageView.CropShape.Oval
-                    : CropImageView.CropShape.Rectangle
+                    : CropImageView.CropShape.Rectangle)!
             };
 
             if (cropImageOptions.FixAspectRatio = settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
@@ -54,18 +55,18 @@ public class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActi
         return _tcs.Task;
     }
 
-    public void OnActivityResult(Java.Lang.Object cropImageResult)
+    public void OnActivityResult(Java.Lang.Object? cropImageResult)
     {
         if (cropImageResult is CropImage.ActivityResult result)
         {
             if (result.IsSuccessful)
             {
-                var path = result.GetUriFilePath(Application.Context, true);
+                var path = result.GetUriFilePath(Application.Context, true)!;
                 _tcs?.TrySetResult(path);
             }
             else
             {
-                _tcs?.TrySetException(result.Error);
+                _tcs?.TrySetException(result.Error ?? new Java.Lang.Exception("Failed to get the path of cropped image"));
             }
         }
         else if (cropImageResult is CropImage.CancelledResult)

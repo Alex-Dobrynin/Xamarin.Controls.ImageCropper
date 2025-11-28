@@ -8,7 +8,8 @@ namespace Plugin.Maui.ImageCropper;
 
 public partial class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
 {
-    private ActivityResultLauncher _launcher;
+    private ActivityResultLauncher? _launcher;
+    private TaskCompletionSource<string>? _tcs;
 
     public ImageCropperImplementation(MauiAppBuilder builder)
     {
@@ -18,11 +19,9 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
                 {
                     if (a is not MauiAppCompatActivity mauiActivity) return;
 
-                    _launcher = mauiActivity.RegisterForActivityResult(new CropImageContract(), Cropper.Current as IActivityResultCallback);
+                    _launcher = mauiActivity.RegisterForActivityResult(new CropImageContract(), this);
                 })));
     }
-
-    private TaskCompletionSource<string> _tcs;
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
@@ -32,11 +31,12 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
         {
             var cropImageOptions = new CropImageOptions
             {
-                OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png,
+                CropperLabelText = settings.CropLabelText,
+                OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png!,
                 ActivityBackgroundColor = Android.Graphics.Color.DarkGray,
-                CropShape = settings.CropShape is CropSettings.CropShapeType.Oval
+                CropShape = (settings.CropShape is CropSettings.CropShapeType.Oval
                     ? CropImageView.CropShape.Oval
-                    : CropImageView.CropShape.Rectangle
+                    : CropImageView.CropShape.Rectangle)!
             };
 
             if (cropImageOptions.FixAspectRatio = settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
@@ -50,7 +50,7 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
                 cropImageOptions.ActivityTitle = new Java.Lang.String(settings.PageTitle);
             }
 
-            _launcher.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
+            _launcher?.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
         }
         catch (Exception ex)
         {
@@ -60,18 +60,18 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
         return _tcs.Task;
     }
 
-    public void OnActivityResult(Java.Lang.Object cropImageResult)
+    public void OnActivityResult(Java.Lang.Object? cropImageResult)
     {
         if (cropImageResult is CropImage.ActivityResult result)
         {
             if (result.IsSuccessful)
             {
-                var path = result.GetUriFilePath(MauiApplication.Context, true);
+                var path = result.GetUriFilePath(MauiApplication.Context, true)!;
                 _tcs?.TrySetResult(path);
             }
             else
             {
-                _tcs?.TrySetException(result.Error);
+                _tcs?.TrySetException(result.Error ?? new Java.Lang.Exception("Failed to get the path of cropped image"));
             }
         }
         else if (cropImageResult is CropImage.CancelledResult)

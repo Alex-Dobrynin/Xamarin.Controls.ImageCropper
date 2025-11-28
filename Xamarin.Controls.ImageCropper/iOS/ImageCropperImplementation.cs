@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,15 +15,15 @@ namespace Controls.ImageCropper;
 
 public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCropper
 {
-    private TaskCompletionSource<string> _tcs;
+    private TaskCompletionSource<string>? _tcs;
 
-    public async Task<string> Crop(CropSettings settings, string imageFilePath)
+    public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
         _tcs = new();
 
         try
         {
-            var image = UIImage.FromFile(imageFilePath);
+            var image = UIImage.FromFile(imageFilePath)!;
 
             var cropViewController = settings.CropShape is CropSettings.CropShapeType.Oval
                 ? new TOCropViewController(TOCropViewCroppingStyle.Circular, image)
@@ -30,6 +31,8 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 
             cropViewController.Title = settings.PageTitle;
             cropViewController.Delegate = this;
+            cropViewController.CancelButtonTitle = settings.CancelTitle;
+            cropViewController.DoneButtonTitle = settings.DoneTitle;
 
             if (settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
             {
@@ -41,20 +44,20 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 
             var navController = new UINavigationController(cropViewController);
 
-            var topVC = GetKeyWindow().RootViewController;
-            while (topVC.PresentedViewController != null)
+            var topVC = GetKeyWindow()?.RootViewController;
+            while (topVC?.PresentedViewController != null)
             {
                 topVC = topVC.PresentedViewController;
             }
 
-            await topVC.PresentViewControllerAsync(navController, true);
+            topVC?.PresentViewController(navController, true, null);
         }
         catch (Exception ex)
         {
             _tcs.SetException(ex);
         }
 
-        return await _tcs.Task;
+        return _tcs.Task;
     }
 
     public override async void DidCropToImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
@@ -75,22 +78,22 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
     {
         await cropViewController.DismissViewControllerAsync(true);
 
-        _tcs.SetCanceled();
+        _tcs!.SetCanceled();
     }
 
     private void Finalize(UIImage image)
     {
         string documentsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-        string jpgFilename = System.IO.Path.Combine(documentsDirectory, $"cropped{DateTime.Now:yyyyMMddHHmmssfff}.jpg");
-        var imgData = image.AsJPEG();
+        string jpgFilename = Path.Combine(documentsDirectory, $"cropped_{DateTime.Now:yyyyMMddHHmmssfff}.jpg");
+        var imgData = image.AsJPEG()!;
 
-        if (imgData.Save(jpgFilename, false, out NSError err))
+        if (imgData.Save(jpgFilename, false, out NSError? err))
         {
-            _tcs.SetResult(jpgFilename);
+            _tcs!.SetResult(jpgFilename);
         }
         else
         {
-            _tcs.SetException(new Exception(err.Description));
+            _tcs!.SetException(new Exception(err?.Description));
         }
     }
 

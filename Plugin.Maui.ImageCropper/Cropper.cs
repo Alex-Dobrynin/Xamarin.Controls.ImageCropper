@@ -2,7 +2,7 @@
 
 public static class Cropper
 {
-    static IImageCropper _implementation;
+    private static IImageCropper? _implementation;
 
     public static IImageCropper Current
     {
@@ -16,12 +16,12 @@ public static class Cropper
         set => _implementation = value;
     }
 
-    public static MauiAppBuilder UseImageCropper(this MauiAppBuilder builder, Action configure = null)
+    public static MauiAppBuilder UseImageCropper(this MauiAppBuilder builder, Action? configure = null)
     {
         return UseImageCropper(builder, false, configure);
     }
 
-    public static MauiAppBuilder UseImageCropper(this MauiAppBuilder builder, bool registerInterface, Action configure = null)
+    public static MauiAppBuilder UseImageCropper(this MauiAppBuilder builder, bool registerInterface, Action? configure = null)
     {
 #if IOS
         Current = new ImageCropperImplementation();
@@ -34,7 +34,7 @@ public static class Cropper
 
         if (registerInterface)
         {
-            builder.Services.AddTransient((s) => Current);
+            builder.Services.AddSingleton((s) => Current);
         }
 
         return builder;

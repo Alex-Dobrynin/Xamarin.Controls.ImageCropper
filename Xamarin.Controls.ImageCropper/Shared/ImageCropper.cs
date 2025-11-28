@@ -1,8 +1,10 @@
-﻿namespace Controls.ImageCropper;
+﻿using System;
+
+namespace Controls.ImageCropper;
 
 public class ImageCropper
 {
-    static IImageCropper _implementation;
+    private static IImageCropper? _implementation;
 
     public static IImageCropper Current
     {
@@ -16,12 +18,12 @@ public class ImageCropper
         }
     }
 
-    static IImageCropper CreateCropper()
+    private static IImageCropper CreateCropper()
     {
 #if ANDROID || IOS
         return new ImageCropperImplementation();
 #else
-        return null;
+        throw new NotImplementedException();
 #endif
     }
 }
