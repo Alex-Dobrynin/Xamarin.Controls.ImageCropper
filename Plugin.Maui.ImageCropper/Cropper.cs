@@ -24,9 +24,9 @@ public static class Cropper
     public static MauiAppBuilder UseImageCropper(this MauiAppBuilder builder, bool registerInterface, Action? configure = null)
     {
 #if IOS
-        Current = new ImageCropperImplementation();
+        Current = new Platforms.iOS.ImageCropperImplementation();
 #elif ANDROID
-        Current = new ImageCropperImplementation(builder);
+        Current = new Platforms.Android.ImageCropperImplementation(builder);
 #else
         Current = new ImageCropperImplementation();
 #endif

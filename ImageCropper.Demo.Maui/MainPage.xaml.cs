@@ -67,6 +67,12 @@ namespace ImageCropper.Demo.Maui
                             AspectRatioY = 1,
                             CropShape = CropSettings.CropShapeType.Oval,
                             PageTitle = "Profile Photo",
+#if IOS
+                            CancelButtonTitle = "Cancel",
+                            DoneButtonTitle = "Done",
+#elif ANDROID
+                            CropLabelText = "Crop",
+#endif
                         }, localFilePath);
 
                         if (!string.IsNullOrEmpty(croppedPath))
