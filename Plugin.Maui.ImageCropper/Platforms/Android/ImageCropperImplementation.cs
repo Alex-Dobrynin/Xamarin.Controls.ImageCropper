@@ -1,12 +1,11 @@
 ﻿using AndroidX.Activity.Result;
-
 using Com.Canhub.Cropper;
-
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Plugin.Maui.ImageCropper;
+namespace Plugin.Maui.ImageCropper.Platforms.Android;
 
-public partial class ImageCropperImplementation : Java.Lang.Object, IImageCropper, IActivityResultCallback
+public partial class ImageCropperImplementation
+    : Java.Lang.Object, IImageCropper, IActivityResultCallback
 {
     private ActivityResultLauncher? _launcher;
     private TaskCompletionSource<string>? _tcs;
@@ -17,29 +16,53 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
             l.AddAndroid(ab =>
                 ab.OnCreate((a, b) =>
                 {
-                    if (a is not MauiAppCompatActivity mauiActivity) return;
+                    if (a is not MauiAppCompatActivity mauiActivity)
+                        return;
 
-                    _launcher = mauiActivity.RegisterForActivityResult(new CropImageContract(), this);
+                    _launcher = mauiActivity.RegisterForActivityResult(
+                        new CropImageContract(),
+                        this);
                 })));
     }
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
-        _tcs = new();
+        if (_tcs != null && !_tcs.Task.IsCompleted)
+            throw new InvalidOperationException(
+                "Crop operation already in progress.");
+
+        if (_launcher == null)
+            throw new InvalidOperationException(
+                "ImageCropper is not initialized yet.");
+
+        _tcs = new TaskCompletionSource<string>();
 
         try
         {
+            var fixAspect =
+                settings.AspectRatioX > 0 &&
+                settings.AspectRatioY > 0;
+
             var cropImageOptions = new CropImageOptions
             {
                 CropperLabelText = settings.CropLabelText,
-                OutputCompressFormat = Android.Graphics.Bitmap.CompressFormat.Png!,
-                ActivityBackgroundColor = Android.Graphics.Color.DarkGray,
-                CropShape = (settings.CropShape is CropSettings.CropShapeType.Oval
-                    ? CropImageView.CropShape.Oval
-                    : CropImageView.CropShape.Rectangle)!
+                ActivityBackgroundColor =
+                    global::Android.Graphics.Color.DarkGray,
+
+                CropShape =
+                    settings.CropShape == CropSettings.CropShapeType.Oval
+                        ? CropImageView.CropShape.Oval!
+                        : CropImageView.CropShape.Rectangle!,
+
+                OutputCompressFormat =
+                    settings.CropShape == CropSettings.CropShapeType.Oval
+                        ? global::Android.Graphics.Bitmap.CompressFormat.Png!
+                        : global::Android.Graphics.Bitmap.CompressFormat.Jpeg!,
+
+                FixAspectRatio = fixAspect
             };
 
-            if (cropImageOptions.FixAspectRatio = settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
+            if (fixAspect)
             {
                 cropImageOptions.AspectRatioX = settings.AspectRatioX;
                 cropImageOptions.AspectRatioY = settings.AspectRatioY;
@@ -47,10 +70,16 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
 
             if (!string.IsNullOrWhiteSpace(settings.PageTitle))
             {
-                cropImageOptions.ActivityTitle = new Java.Lang.String(settings.PageTitle);
+                cropImageOptions.ActivityTitle =
+                    new Java.Lang.String(settings.PageTitle);
             }
 
-            _launcher?.Launch(new CropImageContractOptions(Android.Net.Uri.FromFile(new Java.IO.File(imageFilePath)), cropImageOptions));
+            var uri =
+                global::Android.Net.Uri.FromFile(
+                    new Java.IO.File(imageFilePath));
+
+            _launcher.Launch(
+                new CropImageContractOptions(uri, cropImageOptions));
         }
         catch (Exception ex)
         {
@@ -62,21 +91,40 @@ public partial class ImageCropperImplementation : Java.Lang.Object, IImageCroppe
 
     public void OnActivityResult(Java.Lang.Object? cropImageResult)
     {
+        if (_tcs == null || _tcs.Task.IsCompleted)
+            return;
+
         if (cropImageResult is CropImage.ActivityResult result)
         {
             if (result.IsSuccessful)
             {
-                var path = result.GetUriFilePath(MauiApplication.Context, true)!;
-                _tcs?.TrySetResult(path);
+                var path =
+                    result.GetUriFilePath(
+                        MauiApplication.Context,
+                        true);
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    _tcs.TrySetResult(path);
+                }
+                else
+                {
+                    _tcs.TrySetException(
+                        new Exception(
+                            "Failed to resolve cropped image path."));
+                }
             }
             else
             {
-                _tcs?.TrySetException(result.Error ?? new Java.Lang.Exception("Failed to get the path of cropped image"));
+                _tcs.TrySetException(
+                    result.Error ??
+                    new Java.Lang.Exception(
+                        "Crop operation failed."));
             }
         }
         else if (cropImageResult is CropImage.CancelledResult)
         {
-            _tcs?.TrySetCanceled();
+            _tcs.TrySetCanceled();
         }
     }
 }
