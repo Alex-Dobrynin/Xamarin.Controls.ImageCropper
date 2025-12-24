@@ -11,20 +11,20 @@
 		<DisableExtraReferences>false</DisableExtraReferences>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<Authors>Alex Dobrynin</Authors>
-		<Company />
 		<PackageProjectUrl>https://github.com/Alex-Dobrynin/Xamarin.Controls.ImageCropper</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Alex-Dobrynin/Xamarin.Controls.ImageCropper.git</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
 		<PackageTags>xamarin image cropper crop android ios rotate</PackageTags>
 		<Copyright>2025 Alex Dobrynin</Copyright>
-		<Description>Simple crossplatform Xamarin image cropper</Description>
-		<Version>1.5.0</Version>
+		<Description>Simple crossplatform .NET mobile image cropper</Description>
+		<Version>2.0.0</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
+	
 	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<!-- sourcelink: Declare that the Repository URL can be published to NuSpec -->
@@ -53,6 +53,13 @@
 
 		<Compile Remove="**\**\iOS\**\*.cs" />
 		<None Include="**\**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+	</ItemGroup>
+
+	<!-- .NET -->
+	<ItemGroup Condition="$(TargetFramework.Contains('-'))">
+		<!-- e.g net9.0 -->
+		<Compile Remove="**\**\*.net.cs" />
+		<None Include="**\**\*.net.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" $(TargetFramework.Contains('android')) ">

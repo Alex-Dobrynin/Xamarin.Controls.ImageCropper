@@ -19,7 +19,7 @@
 		<PackageTags>maui;image;cropper;crop;android;ios;rotate</PackageTags>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>2.1.0</Version>
+		<Version>3.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

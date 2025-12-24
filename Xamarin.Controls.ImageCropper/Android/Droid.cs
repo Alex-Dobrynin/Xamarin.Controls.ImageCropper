@@ -9,7 +9,8 @@ public class Droid
 {
     public static void Init(AppCompatActivity activity)
     {
-        ImageCropperActivityResultLauncher = activity.RegisterForActivityResult(new CropImageContract(), (ImageCropper.Current as IActivityResultCallback)!);
+        ImageCropperActivityResultLauncher = activity.RegisterForActivityResult(
+            new CropImageContract(), (ImageCropper.Current as IActivityResultCallback)!);
     }
 
     public static ActivityResultLauncher? ImageCropperActivityResultLauncher { get; set; }

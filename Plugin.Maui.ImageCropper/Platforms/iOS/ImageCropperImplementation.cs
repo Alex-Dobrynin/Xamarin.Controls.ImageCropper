@@ -1,9 +1,12 @@
 ﻿using Bind_TOCropViewController;
+
 using CoreGraphics;
+
 using Foundation;
+
 using UIKit;
 
-namespace Plugin.Maui.ImageCropper.Platforms.iOS;
+namespace Plugin.Maui.ImageCropper;
 
 public partial class ImageCropperImplementation
     : TOCropViewControllerDelegate, IImageCropper
@@ -12,24 +15,21 @@ public partial class ImageCropperImplementation
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
-        if (_tcs != null && !_tcs.Task.IsCompleted)
+        if (_tcs?.Task.IsCompleted is false)
+        {
             throw new InvalidOperationException("Crop operation already in progress.");
+        }
 
-        _tcs = new TaskCompletionSource<string>();
+        _tcs = new();
 
         try
         {
             var image = UIImage.FromFile(imageFilePath)
-                ?? throw new FileNotFoundException(
-                    "Unable to load image.",
-                    imageFilePath);
+                ?? throw new FileNotFoundException("Unable to load image.", imageFilePath);
 
-            var cropViewController =
-                settings.CropShape == CropSettings.CropShapeType.Oval
-                    ? new TOCropViewController(
-                        TOCropViewCroppingStyle.Circular,
-                        image)
-                    : new TOCropViewController(image);
+            var cropViewController = settings.CropShape == CropSettings.CropShapeType.Oval
+                ? new TOCropViewController(TOCropViewCroppingStyle.Circular, image)
+                : new TOCropViewController(image);
 
             cropViewController.Delegate = this;
 
@@ -37,12 +37,10 @@ public partial class ImageCropperImplementation
                 cropViewController.Title = settings.PageTitle;
 
             if (!string.IsNullOrWhiteSpace(settings.CancelButtonTitle))
-                cropViewController.CancelButtonTitle =
-                    settings.CancelButtonTitle;
+                cropViewController.CancelButtonTitle = settings.CancelButtonTitle;
 
             if (!string.IsNullOrWhiteSpace(settings.DoneButtonTitle))
-                cropViewController.DoneButtonTitle =
-                    settings.DoneButtonTitle;
+                cropViewController.DoneButtonTitle = settings.DoneButtonTitle;
 
             if (settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
             {
@@ -50,26 +48,18 @@ public partial class ImageCropperImplementation
                     TOCropViewControllerAspectRatioPreset.Custom;
 
                 cropViewController.CustomAspectRatio =
-                    new CGSize(
-                        settings.AspectRatioX,
-                        settings.AspectRatioY);
+                    new CGSize(settings.AspectRatioX, settings.AspectRatioY);
 
                 cropViewController.ResetAspectRatioEnabled = false;
                 cropViewController.AspectRatioLockEnabled = true;
             }
 
-            var navController =
-                new UINavigationController(cropViewController);
+            var navController = new UINavigationController(cropViewController);
 
-            var topVC =
-                Platform.GetCurrentUIViewController()
-                ?? throw new InvalidOperationException(
-                    "Unable to get current UIViewController.");
+            var topVC = Platform.GetCurrentUIViewController()
+                ?? throw new InvalidOperationException("Unable to get current UIViewController.");
 
-            topVC.PresentViewController(
-                navController,
-                animated: true,
-                completionHandler: null);
+            topVC.PresentViewController(navController, true, null);
         }
         catch (Exception ex)
         {
@@ -80,15 +70,12 @@ public partial class ImageCropperImplementation
     }
 
     public override async void DidCropToImage(
-        TOCropViewController cropViewController,
-        UIImage image,
-        CGRect cropRect,
-        nint angle)
+        TOCropViewController cropViewController, UIImage image,
+        CGRect cropRect, nint angle)
     {
         try
         {
-            await cropViewController
-                .DismissViewControllerAsync(true);
+            await cropViewController.DismissViewControllerAsync(true);
 
             FinalizeImage(image, CropSettings.CropShapeType.Rectangle);
         }
@@ -99,15 +86,12 @@ public partial class ImageCropperImplementation
     }
 
     public override async void DidCropToCircularImage(
-        TOCropViewController cropViewController,
-        UIImage image,
-        CGRect cropRect,
-        nint angle)
+        TOCropViewController cropViewController, UIImage image,
+        CGRect cropRect, nint angle)
     {
         try
         {
-            await cropViewController
-                .DismissViewControllerAsync(true);
+            await cropViewController.DismissViewControllerAsync(true);
 
             FinalizeImage(image, CropSettings.CropShapeType.Oval);
         }
@@ -118,13 +102,11 @@ public partial class ImageCropperImplementation
     }
 
     public override async void DidFinishCancelled(
-        TOCropViewController cropViewController,
-        bool cancelled)
+        TOCropViewController cropViewController, bool cancelled)
     {
         try
         {
-            await cropViewController
-                .DismissViewControllerAsync(true);
+            await cropViewController.DismissViewControllerAsync(true);
 
             _tcs?.SetCanceled();
         }
@@ -134,28 +116,21 @@ public partial class ImageCropperImplementation
         }
     }
 
-    private void FinalizeImage(
-        UIImage image,
-        CropSettings.CropShapeType cropShape)
+    private void FinalizeImage(UIImage image, CropSettings.CropShapeType cropShape)
     {
-        var documentsDirectory =
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.MyDocuments);
+        var documentsDirectory = Environment.GetFolderPath(
+            Environment.SpecialFolder.MyDocuments);
 
-        var extension =
-            cropShape == CropSettings.CropShapeType.Oval
-                ? "png"
-                : "jpg";
+        var extension = cropShape == CropSettings.CropShapeType.Oval
+            ? "png"
+            : "jpg";
 
-        var filePath =
-            Path.Combine(
-                documentsDirectory,
-                $"cropped_{DateTime.UtcNow:yyyyMMddHHmmssfff}.{extension}");
+        var filePath = Path.Combine(documentsDirectory,
+            $"cropped_{DateTime.UtcNow:yyyyMMddHHmmssfff}.{extension}");
 
-        NSData imageData =
-            cropShape == CropSettings.CropShapeType.Oval
-                ? image.AsPNG()!
-                : image.AsJPEG()!;
+        var imageData = cropShape == CropSettings.CropShapeType.Oval
+            ? image.AsPNG()!
+            : image.AsJPEG()!;
 
         if (imageData.Save(filePath, false, out NSError? error))
         {
@@ -163,8 +138,7 @@ public partial class ImageCropperImplementation
         }
         else
         {
-            _tcs?.SetException(
-                new Exception(error?.LocalizedDescription));
+            _tcs?.SetException(new Exception(error?.LocalizedDescription));
         }
     }
 }

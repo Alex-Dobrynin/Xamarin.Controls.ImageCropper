@@ -19,27 +19,43 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
 
     public Task<string> Crop(CropSettings settings, string imageFilePath)
     {
+        if (_tcs?.Task.IsCompleted is false)
+        {
+            throw new InvalidOperationException("Crop operation already in progress.");
+        }
+
         _tcs = new();
 
         try
         {
-            var image = UIImage.FromFile(imageFilePath)!;
+            var image = UIImage.FromFile(imageFilePath)
+                ?? throw new FileNotFoundException("Unable to load image.", imageFilePath);
 
-            var cropViewController = settings.CropShape is CropSettings.CropShapeType.Oval
+            var cropViewController = settings.CropShape == CropSettings.CropShapeType.Oval
                 ? new TOCropViewController(TOCropViewCroppingStyle.Circular, image)
                 : new TOCropViewController(image);
 
-            cropViewController.Title = settings.PageTitle;
             cropViewController.Delegate = this;
-            cropViewController.CancelButtonTitle = settings.CancelTitle;
-            cropViewController.DoneButtonTitle = settings.DoneTitle;
+
+            if (!string.IsNullOrWhiteSpace(settings.PageTitle))
+                cropViewController.Title = settings.PageTitle;
+
+            if (!string.IsNullOrWhiteSpace(settings.CancelButtonTitle))
+                cropViewController.CancelButtonTitle = settings.CancelButtonTitle;
+
+            if (!string.IsNullOrWhiteSpace(settings.DoneButtonTitle))
+                cropViewController.DoneButtonTitle = settings.DoneButtonTitle;
 
             if (settings.AspectRatioX > 0 && settings.AspectRatioY > 0)
             {
-                cropViewController.AspectRatioPreset = TOCropViewControllerAspectRatioPreset.Custom;
+                cropViewController.AspectRatioPreset =
+                    TOCropViewControllerAspectRatioPreset.Custom;
+
+                cropViewController.CustomAspectRatio =
+                    new CGSize(settings.AspectRatioX, settings.AspectRatioY);
+
                 cropViewController.ResetAspectRatioEnabled = false;
                 cropViewController.AspectRatioLockEnabled = true;
-                cropViewController.CustomAspectRatio = new CGSize(settings.AspectRatioX, settings.AspectRatioY);
             }
 
             var navController = new UINavigationController(cropViewController);
@@ -60,40 +76,55 @@ public class ImageCropperImplementation : TOCropViewControllerDelegate, IImageCr
         return _tcs.Task;
     }
 
-    public override async void DidCropToImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
+    public override async void DidCropToImage(
+        TOCropViewController cropViewController, UIImage image,
+        CGRect cropRect, nint angle)
     {
         await cropViewController.DismissViewControllerAsync(true);
 
-        Finalize(image);
+        Finalize(image, CropSettings.CropShapeType.Rectangle);
     }
 
-    public override async void DidCropToCircularImage(TOCropViewController cropViewController, UIImage image, CGRect cropRect, nint angle)
+    public override async void DidCropToCircularImage(
+        TOCropViewController cropViewController, UIImage image,
+        CGRect cropRect, nint angle)
     {
         await cropViewController.DismissViewControllerAsync(true);
 
-        Finalize(image);
+        Finalize(image, CropSettings.CropShapeType.Oval);
     }
 
-    public override async void DidFinishCancelled(TOCropViewController cropViewController, bool cancelled)
+    public override async void DidFinishCancelled(
+        TOCropViewController cropViewController, bool cancelled)
     {
         await cropViewController.DismissViewControllerAsync(true);
 
         _tcs!.SetCanceled();
     }
 
-    private void Finalize(UIImage image)
+    private void Finalize(UIImage image, CropSettings.CropShapeType cropShape)
     {
-        string documentsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-        string jpgFilename = Path.Combine(documentsDirectory, $"cropped_{DateTime.Now:yyyyMMddHHmmssfff}.jpg");
-        var imgData = image.AsJPEG()!;
+        var documentsDirectory = Environment.GetFolderPath(
+            Environment.SpecialFolder.MyDocuments);
 
-        if (imgData.Save(jpgFilename, false, out NSError? err))
+        var extension = cropShape == CropSettings.CropShapeType.Oval
+            ? "png"
+            : "jpg";
+
+        var filePath = Path.Combine(documentsDirectory,
+            $"cropped_{DateTime.UtcNow:yyyyMMddHHmmssfff}.{extension}");
+
+        var imageData = cropShape == CropSettings.CropShapeType.Oval
+            ? image.AsPNG()!
+            : image.AsJPEG()!;
+
+        if (imageData.Save(filePath, false, out NSError? error))
         {
-            _tcs!.SetResult(jpgFilename);
+            _tcs?.SetResult(filePath);
         }
         else
         {
-            _tcs!.SetException(new Exception(err?.Description));
+            _tcs?.SetException(new Exception(error?.LocalizedDescription));
         }
     }
 
